@@ -57,6 +57,8 @@ public class FilmAdapterRecycler extends RecyclerView.Adapter<FilmAdapterRecycle
             public void onClick(View v) {
                 Intent intent = new Intent(context,DetailMovieActivity.class);
                 intent.putExtra("Title",currentFilm.getTitle());
+                intent.putExtra("Image",currentFilm.getBackdropPath());
+                intent.putExtra("Description",currentFilm.getOverview());
                 context.startActivity(intent);
             }
         });
