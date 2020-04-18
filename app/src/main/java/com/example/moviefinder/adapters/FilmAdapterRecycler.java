@@ -29,7 +29,7 @@ public class FilmAdapterRecycler extends RecyclerView.Adapter<FilmAdapterRecycle
         this.mOnFilmListener = onFilmListener;
     }
 
-    public void setFilms(List<Film> films) {
+    public void setFilms(List<Film> films)  {
         this.films = films;
     }
 
