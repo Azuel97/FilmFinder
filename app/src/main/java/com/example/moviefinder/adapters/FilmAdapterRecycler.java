@@ -2,9 +2,11 @@ package com.example.moviefinder.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CursorAdapter;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
@@ -51,24 +53,12 @@ public class FilmAdapterRecycler extends RecyclerView.Adapter<FilmAdapterRecycle
         Glide.with(context)
                 .load("https://image.tmdb.org/t/p/w500/"+currentFilm.getPosterPath())
                 .into(holder.image);
-
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context,DetailMovieActivity.class);
-                intent.putExtra("Title",currentFilm.getTitle());
-                intent.putExtra("Image",currentFilm.getBackdropPath());
-                intent.putExtra("Description",currentFilm.getOverview());
-                context.startActivity(intent);
-            }
-        });
     }
 
     @Override
     public int getItemCount() {
         return films.size();
     }
-
 
     // Classe ViewHolder
     public static class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

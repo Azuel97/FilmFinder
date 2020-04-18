@@ -18,8 +18,8 @@ public class FilmProvider extends ContentProvider {
 
     public static final String BASE_PATH_FILMS = "films";
 
-    public static final int ALL_FILM = 0;
-    public static final int SINGLE_FILM = 1;
+    public static final int ALL_FILM = 1;
+    public static final int SINGLE_FILM = 0;
 
     public static final String MIME_TYPE_FILMS = ContentResolver.CURSOR_DIR_BASE_TYPE + "vnd.all_films";
     public static final String MIME_TYPE_FILM = ContentResolver.CURSOR_ITEM_BASE_TYPE + "vnd.single_film";
@@ -34,7 +34,6 @@ public class FilmProvider extends ContentProvider {
         uriMatcher.addURI(AUTORITY, BASE_PATH_FILMS, ALL_FILM);
         uriMatcher.addURI(AUTORITY,BASE_PATH_FILMS + "/#", SINGLE_FILM);
     }
-
 
     @Override
     public boolean onCreate() {

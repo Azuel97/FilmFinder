@@ -4,6 +4,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -12,6 +13,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.moviefinder.R;
+import com.example.moviefinder.database.FilmProvider;
+import com.example.moviefinder.database.FilmTableHelper;
 
 public class DetailMovieActivity extends AppCompatActivity {
 
@@ -26,22 +29,23 @@ public class DetailMovieActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#1976D2")));
 
-
         Intent intent = getIntent();
-        String title = intent.getExtras().getString("Title");
-        String image = intent.getExtras().getString("Image");
-        String description = intent.getExtras().getString("Description");
+        int id = intent.getExtras().getInt("ID");
+
+        Cursor cursor = getContentResolver().query(FilmProvider.FILMS_URI, null, FilmTableHelper._ID + " = " + id, null,null);
+        cursor.moveToNext();
 
         TextView textViewTitle = findViewById(R.id.text_Title);
-        textViewTitle.setText(title);
+        textViewTitle.setText(cursor.getString(cursor.getColumnIndex(FilmTableHelper.TITLE)));
 
         TextView textViewDescription = findViewById(R.id.textViewDescription);
-        textViewDescription.setText(description);
+        textViewDescription.setText(cursor.getString(cursor.getColumnIndex(FilmTableHelper.DESCRIPTION)));
 
         ImageView imageView = findViewById(R.id.imageViewDetail);
         // Glide for image
         Glide.with(this)
-                .load("https://image.tmdb.org/t/p/w500/"+image)
+                .load("https://image.tmdb.org/t/p/w500/"+cursor.getString(cursor.getColumnIndex(FilmTableHelper.BACKDROP_PATH)))
+                .placeholder(new ColorDrawable(Color.BLUE))
                 .into(imageView);
     }
 }

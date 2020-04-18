@@ -1,12 +1,18 @@
 package com.example.moviefinder.activities;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.content.CursorLoader;
+import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -21,6 +27,7 @@ import com.example.moviefinder.data.models.Film;
 import com.example.moviefinder.data.models.Films;
 import com.example.moviefinder.data.services.IWebServer;
 import com.example.moviefinder.data.services.WebService;
+import com.example.moviefinder.database.FilmProvider;
 import com.example.moviefinder.database.FilmTableHelper;
 
 import java.util.List;
@@ -37,6 +44,20 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
         @Override
         public void onFilmsFetched(boolean success, Films films, int errorCode, String errorMessage, List<Film> responseFilm) {
             if (success) {
+
+                Cursor cursor = getContentResolver().query(FilmProvider.FILMS_URI, null, null, null,null);
+                if (cursor == null) {
+                    Log.d("PROVA", "onFilmsFetched: " + responseFilm.size());
+                    ContentValues values = new ContentValues();
+                    for (int i = 0; i < responseFilm.size(); i++) {
+                        values.put(FilmTableHelper.TITLE, responseFilm.get(i).getTitle());
+                        values.put(FilmTableHelper.DESCRIPTION, responseFilm.get(i).getOverview());
+                        values.put(FilmTableHelper.POSTER_PATH, responseFilm.get(i).getPosterPath());
+                        values.put(FilmTableHelper.BACKDROP_PATH, responseFilm.get(i).getBackdropPath());
+                        getContentResolver().insert(FilmProvider.FILMS_URI, values);
+                    }
+                }
+
                 adapterRecycler.setFilms(responseFilm);
                 adapterRecycler.notifyDataSetChanged();
                 loadingBar.setVisibility(View.GONE);
@@ -80,10 +101,9 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
     public void onFilmCLick(int position) {
         Log.d("PROVA", "Film : " + position);
 
-       /* Intent intent = new Intent(this,DetailMovieActivity.class);
-        intent.putExtra("Title", film.getTitle());
-        intent.putExtra("Image", film.getBackdropPath());
-        intent.putExtra("Description",film.getOverview());
-        startActivity(intent);*/
+        Intent intent = new Intent(this,DetailMovieActivity.class);
+        intent.putExtra("ID", position+1);
+        startActivity(intent);
     }
+
 }
