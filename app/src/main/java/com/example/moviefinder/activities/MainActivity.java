@@ -1,29 +1,27 @@
-package com.example.moviefinder;
+package com.example.moviefinder.activities;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.GridView;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.example.moviefinder.adapters.FilmAdapter;
+import com.example.moviefinder.R;
 import com.example.moviefinder.adapters.FilmAdapterRecycler;
 import com.example.moviefinder.data.models.Film;
 import com.example.moviefinder.data.models.Films;
 import com.example.moviefinder.data.services.IWebServer;
 import com.example.moviefinder.data.services.WebService;
+import com.example.moviefinder.database.FilmTableHelper;
 
 import java.util.List;
 
@@ -43,7 +41,6 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
                 adapterRecycler.notifyDataSetChanged();
                 loadingBar.setVisibility(View.GONE);
                 Toast.makeText(MainActivity.this,"E' andato tutto bene", Toast.LENGTH_SHORT).show();
-
             } else {
                 loadingBar.setVisibility(View.GONE);
                 Toast.makeText(MainActivity.this,"Qualcosa è andato storto : " + errorMessage, Toast.LENGTH_SHORT).show();
@@ -81,10 +78,12 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
 
     @Override
     public void onFilmCLick(int position) {
-        Log.d("PROVA", "Posizione : " + position);
-        /*
-        Intent intent = new Intent(this, DetailMovieActivity.class);
-        startActivity(intent);
-        */
+        Log.d("PROVA", "Film : " + position);
+
+       /* Intent intent = new Intent(this,DetailMovieActivity.class);
+        intent.putExtra("Title", film.getTitle());
+        intent.putExtra("Image", film.getBackdropPath());
+        intent.putExtra("Description",film.getOverview());
+        startActivity(intent);*/
     }
 }

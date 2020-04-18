@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.moviefinder.DetailMovieActivity;
+import com.example.moviefinder.activities.DetailMovieActivity;
 import com.example.moviefinder.R;
 import com.example.moviefinder.data.models.Film;
 
@@ -70,14 +70,13 @@ public class FilmAdapterRecycler extends RecyclerView.Adapter<FilmAdapterRecycle
     }
 
 
-
     // Classe ViewHolder
     public static class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         ImageView image;
         OnFilmListener onFilmListener;
 
-        public MyViewHolder(@NonNull View itemView, OnFilmListener onFilmListener ) {
+        public MyViewHolder(@NonNull View itemView, OnFilmListener onFilmListener) {
             super(itemView);
             this.onFilmListener = onFilmListener;
             image = itemView.findViewById(R.id.imageFilm);
@@ -94,6 +93,6 @@ public class FilmAdapterRecycler extends RecyclerView.Adapter<FilmAdapterRecycle
 
     // Interface per il clickListener
     public interface OnFilmListener {
-        void onFilmCLick(int position );
+        void onFilmCLick(int position);
     }
 }

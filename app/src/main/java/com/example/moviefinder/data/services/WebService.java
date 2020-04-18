@@ -1,14 +1,10 @@
 package com.example.moviefinder.data.services;
 
 import android.util.Log;
-import android.widget.Toast;
 
-import com.example.moviefinder.MainActivity;
-import com.example.moviefinder.data.models.Film;
 import com.example.moviefinder.data.models.Films;
 
 import java.io.IOException;
-import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;

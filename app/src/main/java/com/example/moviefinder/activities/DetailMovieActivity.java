@@ -1,4 +1,4 @@
-package com.example.moviefinder;
+package com.example.moviefinder.activities;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.example.moviefinder.R;
 
 public class DetailMovieActivity extends AppCompatActivity {
 
