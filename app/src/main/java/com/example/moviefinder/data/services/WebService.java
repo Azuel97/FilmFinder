@@ -15,6 +15,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class WebService {
 
     private String FILM_BASE_URL = "https://api.themoviedb.org/3/";
+    private String API_KEY = "6710ff6073915867f8a6b472ffbd9235";
+    private String LANGUAGE = "it-IT";
     private static WebService instance;
     private FilmService filmService;
 
@@ -33,8 +35,8 @@ public class WebService {
         return instance;
     }
 
-    public void getFilms(final IWebServer callBack) {
-        Call<Films> filmRequest = filmService.getFilms();
+    public void getFilms(final IWebServer callBack, int page) {
+        Call<Films> filmRequest = filmService.getFilms(API_KEY,LANGUAGE,String.valueOf(page));
         filmRequest.enqueue(new Callback<Films>() {
             @Override
             public void onResponse(Call<Films> call, Response<Films> response) {

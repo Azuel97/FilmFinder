@@ -46,8 +46,8 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
             if (success) {
 
                 Cursor cursor = getContentResolver().query(FilmProvider.FILMS_URI, null, null, null,null);
-                if (cursor == null) {
-                    Log.d("PROVA", "onFilmsFetched: " + responseFilm.size());
+                if (cursor.getCount() == 0) {
+                    Log.d("PROVA", "SAVE DB: " + responseFilm.size());
                     ContentValues values = new ContentValues();
                     for (int i = 0; i < responseFilm.size(); i++) {
                         values.put(FilmTableHelper.TITLE, responseFilm.get(i).getTitle());
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
 
     private void loadTodos() {
         loadingBar.setVisibility(View.VISIBLE);
-        webService.getFilms(webServerListener);
+        webService.getFilms(webServerListener,1);
     }
 
     @Override
