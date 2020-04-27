@@ -25,13 +25,14 @@ public class DetailMovieActivity extends AppCompatActivity {
         setTitle("Details Movie");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-
         ActionBar actionBar = getSupportActionBar();
         actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#1976D2")));
 
+        // Recupero dall'intent ricevuto dalla mainactivity
         Intent intent = getIntent();
         int id = intent.getExtras().getInt("ID");
 
+        // Eseguo una ricerca tramite l'id all'interno del db per recuperare le informazioni del film
         Cursor cursor = getContentResolver().query(FilmProvider.FILMS_URI, null, FilmTableHelper._ID + " = " + id, null,null);
         cursor.moveToNext();
 

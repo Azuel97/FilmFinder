@@ -55,6 +55,10 @@ public class Film {
         this.voteAverage = voteAverage;
     }
 
+    public Film(String posterPath) {
+        this.posterPath = posterPath;
+    }
+
     public String getPosterPath() {
         return posterPath;
     }
