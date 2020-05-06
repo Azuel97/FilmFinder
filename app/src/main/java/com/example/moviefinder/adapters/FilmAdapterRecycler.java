@@ -61,7 +61,7 @@ public class FilmAdapterRecycler extends RecyclerView.Adapter<FilmAdapterRecycle
     }
 
     // Classe ViewHolder
-    public static class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    public static class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
         ImageView image;
         OnFilmListener onFilmListener;
@@ -72,11 +72,18 @@ public class FilmAdapterRecycler extends RecyclerView.Adapter<FilmAdapterRecycle
             image = itemView.findViewById(R.id.imageFilm);
 
             itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
         }
 
         @Override
         public void onClick(View v) {
             onFilmListener.onFilmCLick(getAdapterPosition());
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            onFilmListener.onLongFilmClick(getAdapterPosition());
+            return true;
         }
     }
 
@@ -84,5 +91,6 @@ public class FilmAdapterRecycler extends RecyclerView.Adapter<FilmAdapterRecycle
     // Interface per il clickListener
     public interface OnFilmListener {
         void onFilmCLick(int position);
+        void onLongFilmClick(int position);
     }
 }

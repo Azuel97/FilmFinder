@@ -17,15 +17,22 @@ public class FilmProvider extends ContentProvider {
     public static final String AUTORITY = "com.example.moviefinder.database.ContentProvider";
 
     public static final String BASE_PATH_FILMS = "films";
+    public static final String BASE_PATH_FAVORITES = "favorites";
 
     public static final int ALL_FILM = 1;
     public static final int SINGLE_FILM = 0;
+    public static final int ALL_FAVORITE = 3;
+    public static final int SINGLE_FAVORITE = 2;
 
     public static final String MIME_TYPE_FILMS = ContentResolver.CURSOR_DIR_BASE_TYPE + "vnd.all_films";
     public static final String MIME_TYPE_FILM = ContentResolver.CURSOR_ITEM_BASE_TYPE + "vnd.single_film";
+    public static final String MIME_TYPE_FAVORITES = ContentResolver.CURSOR_DIR_BASE_TYPE + "vnd.all_favorites";
+    public static final String MIME_TYPE_FAVORITE = ContentResolver.CURSOR_ITEM_BASE_TYPE + "vnd.single_favorite";
 
     public static final Uri FILMS_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://" + AUTORITY
             + "/" + BASE_PATH_FILMS);
+    public static final Uri FAVORITES_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://" + AUTORITY
+            + "/" + BASE_PATH_FAVORITES);
 
     private FilmDB database;
     private static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
@@ -33,6 +40,8 @@ public class FilmProvider extends ContentProvider {
     static {
         uriMatcher.addURI(AUTORITY, BASE_PATH_FILMS, ALL_FILM);
         uriMatcher.addURI(AUTORITY,BASE_PATH_FILMS + "/#", SINGLE_FILM);
+        uriMatcher.addURI(AUTORITY, BASE_PATH_FAVORITES, ALL_FAVORITE);
+        uriMatcher.addURI(AUTORITY,BASE_PATH_FAVORITES + "/#", SINGLE_FAVORITE);
     }
 
     @Override
@@ -53,6 +62,14 @@ public class FilmProvider extends ContentProvider {
                 break;
             case ALL_FILM:
                 builder.setTables(FilmTableHelper.TABLE_NAME);
+                break;
+            case SINGLE_FAVORITE:
+                builder.setTables(FavoriteTableHelper.TABLE_NAME);
+                builder.appendWhere(FavoriteTableHelper._ID + " = " + uri.getLastPathSegment());
+                break;
+            case ALL_FAVORITE:
+                builder.setTables(FavoriteTableHelper.TABLE_NAME);
+                break;
         }
         Cursor cursor = builder.query(db, projection, selection, selectionArgs, null, null, sortOrder);
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
@@ -68,6 +85,10 @@ public class FilmProvider extends ContentProvider {
                 return MIME_TYPE_FILM;
             case ALL_FILM:
                 return MIME_TYPE_FILMS;
+            case SINGLE_FAVORITE:
+                return MIME_TYPE_FAVORITE;
+            case ALL_FAVORITE:
+                return MIME_TYPE_FAVORITES;
         }
         return null;
     }
@@ -81,6 +102,12 @@ public class FilmProvider extends ContentProvider {
             String resultSrting = ContentResolver.SCHEME_CONTENT + "://" + BASE_PATH_FILMS + "/" + result;
             getContext().getContentResolver().notifyChange(uri,null);
             return Uri.parse(resultSrting);
+        } else if (uriMatcher.match(uri) == ALL_FAVORITE) {
+            SQLiteDatabase db = database.getWritableDatabase();
+            long result = db.insert(FavoriteTableHelper.TABLE_NAME, null, values);
+            String resultString = ContentResolver.SCHEME_CONTENT + "://" + BASE_PATH_FAVORITES + "/" + result;
+            getContext().getContentResolver().notifyChange(uri, null);
+            return Uri.parse(resultString);
         }
         return null;
     }
@@ -99,6 +126,17 @@ public class FilmProvider extends ContentProvider {
                 break;
             case ALL_FILM:
                 table = FilmTableHelper.TABLE_NAME;
+                query = selection;
+                break;
+            case SINGLE_FAVORITE:
+                table = FavoriteTableHelper.TABLE_NAME;
+                query = FavoriteTableHelper._ID + " = " + uri.getLastPathSegment();
+                if (selection != null) {
+                    query += " AND " + selection;
+                }
+                break;
+            case ALL_FAVORITE:
+                table = FavoriteTableHelper.TABLE_NAME;
                 query = selection;
                 break;
         }
@@ -122,6 +160,17 @@ public class FilmProvider extends ContentProvider {
                 break;
             case ALL_FILM:
                 table = FilmTableHelper.TABLE_NAME;
+                query = selection;
+                break;
+            case SINGLE_FAVORITE:
+                table = FavoriteTableHelper.TABLE_NAME;
+                query = FavoriteTableHelper._ID + " = " + uri.getLastPathSegment();
+                if (selection != null) {
+                    query += " AND " + selection;
+                }
+                break;
+            case ALL_FAVORITE:
+                table = FavoriteTableHelper.TABLE_NAME;
                 query = selection;
                 break;
         }
