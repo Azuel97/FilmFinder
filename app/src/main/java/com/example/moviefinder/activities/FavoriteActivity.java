@@ -24,6 +24,7 @@ import com.example.moviefinder.adapters.FavoriteAdapter;
 import com.example.moviefinder.adapters.FilmAdapterRecycler;
 import com.example.moviefinder.database.FavoriteTableHelper;
 import com.example.moviefinder.database.FilmProvider;
+import com.example.moviefinder.database.FilmTableHelper;
 import com.example.moviefinder.fragments.ConfirmDialogFragment;
 import com.example.moviefinder.fragments.ConfirmDialogFragmentListener;
 
@@ -55,9 +56,14 @@ public class FavoriteActivity extends AppCompatActivity implements LoaderManager
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                int idFilm = position + 1;
+                Cursor mCursor = getContentResolver().query(FilmProvider.FAVORITES_URI, null, FavoriteTableHelper._ID + " =" + idFilm, null,null);
+                mCursor.moveToFirst();
+                String titoloFilm = mCursor.getString(mCursor.getColumnIndex(FilmTableHelper.TITLE));
+
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 ConfirmDialogFragment dialogFragment = new ConfirmDialogFragment("Rimuovi dai Preferiti",
-                        "Sei sicuro di volere rimuovere il film dai preferiti ?",
+                        "Sei sicuro di volere rimuovere il film " + titoloFilm + " dai preferiti ?",
                         position);
                 dialogFragment.show(fragmentManager, ConfirmDialogFragment.class.getName());
                 return true;
@@ -98,13 +104,14 @@ public class FavoriteActivity extends AppCompatActivity implements LoaderManager
             String whereClause = FavoriteTableHelper._ID + "=?";
             String[] whereArgs = new String[] { String.valueOf(filmId) };
             int deletedRows = getContentResolver().delete(FilmProvider.FAVORITES_URI, whereClause, whereArgs);
+            Log.d("PROVA", "deleteFilm: " + deletedRows);
             if (deletedRows > 0) {
                 Toast.makeText(FavoriteActivity.this, "Eliminato con successo", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(FavoriteActivity.this, "Errore durante la cancellazione", Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(FavoriteActivity.this, "Errore durante la cancellazione", Toast.LENGTH_SHORT).show();
+            Toast.makeText(FavoriteActivity.this, "Errore", Toast.LENGTH_SHORT).show();
         }
     }
 

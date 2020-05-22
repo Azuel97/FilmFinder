@@ -18,12 +18,15 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -45,6 +48,11 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements FilmAdapterRecycler.OnFilmListener, ConfirmDialogFragmentListener {
 
+    Boolean isScrolling = false;
+    int currentItems, totalItems, scrollOutItems;
+    GridLayoutManager manager;
+    int page = 1;
+
     Toolbar toolbar;
 
     private ProgressBar loadingBar;
@@ -58,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
         public void onFilmsFetched(boolean success, Films films, int errorCode, String errorMessage, List<Film> responseFilm) {
             // Se il fetch dei dati va a buon fine
             if (success) {
+                 Log.d("PROVA", "onFilmsFetched: " + films.getPage());
                 // Eseguo query, che ritorna l'intera tabella del db
                 Cursor cursor = getContentResolver().query(FilmProvider.FILMS_URI, null, null, null,null);
                 // Se ritorna 0, allora è vuota, quindi deve popolare il db
@@ -67,6 +76,10 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
                     fetchDatiDatabase();
                 } else {
                     Log.d("PROVA", "READ DB");
+
+                    // TODO: da modificare per visualizzare correttamente
+                    saveDataOnDB(responseFilm);
+
                     fetchDatiDatabase();
                 }
                 // Toast.makeText(MainActivity.this,"E' andato tutto bene", Toast.LENGTH_SHORT).show();
@@ -93,8 +106,36 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
         recyclerView = findViewById(R.id.film_recycler);
 
         adapterRecycler = new FilmAdapterRecycler(this,this);
-        recyclerView.setLayoutManager(new GridLayoutManager(this,2));
+
+        manager = new GridLayoutManager(this,2);
+
+        recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapterRecycler);
+
+        //loadFilms();
+
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
+                    isScrolling = true;
+                }
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                currentItems = manager.getChildCount();
+                totalItems = manager.getItemCount();
+                scrollOutItems = manager.findFirstVisibleItemPosition();
+
+                if (isScrolling && (currentItems + scrollOutItems ==  totalItems)) {
+                    isScrolling = false;
+                    loadFilmsScrool();
+                }
+            }
+        });
 
         loadFilms();
     }
@@ -121,7 +162,28 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
     // Carico i film
     private void loadFilms() {
         loadingBar.setVisibility(View.VISIBLE);
-        webService.getFilms(webServerListener,1);
+        webService.getFilms(webServerListener,page);
+        page++;
+    }
+
+    // Carico i film
+    private void loadFilmsScrool() {
+        /*loadingBar.setVisibility(View.VISIBLE);
+        webService.getFilms(webServerListener,2);
+        adapterRecycler.notifyDataSetChanged();*/
+
+        loadingBar.setVisibility(View.VISIBLE);
+        Toast.makeText(MainActivity.this,"Caricamento film...", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    webService.getFilms(webServerListener,page);
+                    adapterRecycler.notifyDataSetChanged();
+                    page++;
+                }
+            },2000);
+
     }
 
     // Gestione del click sulla locandina del film nella lista
