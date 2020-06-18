@@ -11,6 +11,7 @@ import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,19 +23,26 @@ import android.widget.Toast;
 import com.example.moviefinder.R;
 import com.example.moviefinder.adapters.FavoriteAdapter;
 import com.example.moviefinder.adapters.FilmAdapterRecycler;
+import com.example.moviefinder.data.models.Film;
 import com.example.moviefinder.database.FavoriteTableHelper;
 import com.example.moviefinder.database.FilmProvider;
 import com.example.moviefinder.database.FilmTableHelper;
 import com.example.moviefinder.fragments.ConfirmDialogFragment;
 import com.example.moviefinder.fragments.ConfirmDialogFragmentListener;
 
-public class FavoriteActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>, ConfirmDialogFragmentListener {
+import java.util.ArrayList;
+import java.util.List;
+
+public class FavoriteActivity extends AppCompatActivity implements ConfirmDialogFragmentListener, FavoriteAdapter.OnFilmListener {
 
     Toolbar toolbar;
     private static final int MY_ID = 3;
 
     ListView listView;
     FavoriteAdapter favoriteAdapter;
+
+    GridLayoutManager manager;
+    RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,44 +55,26 @@ public class FavoriteActivity extends AppCompatActivity implements LoaderManager
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        listView = findViewById(R.id.listViewFavorite);
 
-        favoriteAdapter = new FavoriteAdapter(this, null);
-        listView.setAdapter(favoriteAdapter);
-        getSupportLoaderManager().initLoader(MY_ID, null, this);
+        recyclerView = findViewById(R.id.favorite_recycler);
+        favoriteAdapter = new FavoriteAdapter(this,this);
 
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                int idFilm = position + 1;
-                Cursor mCursor = getContentResolver().query(FilmProvider.FAVORITES_URI, null, FavoriteTableHelper._ID + " =" + idFilm, null,null);
-                mCursor.moveToFirst();
-                String titoloFilm = mCursor.getString(mCursor.getColumnIndex(FilmTableHelper.TITLE));
+        // Controllo l'orientamento dello schermo
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            // Se è portrait, allora uso 2 colonne
+            manager = new GridLayoutManager(this,2);
+        }
+        else{
+            // Se è landscape, allore uso 3 colonne
+            manager = new GridLayoutManager(this,3);
+        }
 
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                ConfirmDialogFragment dialogFragment = new ConfirmDialogFragment("Rimuovi dai Preferiti",
-                        "Sei sicuro di volere rimuovere il film " + titoloFilm + " dai preferiti ?",
-                        position);
-                dialogFragment.show(fragmentManager, ConfirmDialogFragment.class.getName());
-                return true;
-            }
-        });
-    }
+        //manager = new GridLayoutManager(this, 2);
+        recyclerView.setLayoutManager(manager);
+        recyclerView.setAdapter(favoriteAdapter);
 
-    @NonNull
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
-        return new CursorLoader(this, FilmProvider.FAVORITES_URI, null, null, null, null);
-    }
+        fetchDatiDatabase();
 
-    @Override
-    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
-        favoriteAdapter.changeCursor(data);
-    }
-
-    @Override
-    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
-        favoriteAdapter.changeCursor(null);
     }
 
     @Override
@@ -115,4 +105,32 @@ public class FavoriteActivity extends AppCompatActivity implements LoaderManager
         }
     }
 
+    // Fetch dei dati nel database
+    private void fetchDatiDatabase() {
+        // Se il fetch dei dati mi ritorna un errore allora esegua query sul db per recuperare tutti i flim dal db interno
+        Cursor mCursor = getContentResolver().query(FilmProvider.FAVORITES_URI, null, null, null,null);
+        List<Film> films1 = new ArrayList<>();
+        for(mCursor.moveToFirst(); !mCursor.isAfterLast(); mCursor.moveToNext()) {
+            // The Cursor is now set to the right position
+            films1.add(new Film(mCursor.getString(mCursor.getColumnIndex(FilmTableHelper.POSTER_PATH))));
+        }
+        // Setto la recyclerview con i film recuperati dal database
+        favoriteAdapter.setFilms(films1);
+        favoriteAdapter.notifyDataSetChanged();
+        //loadingBar.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onLongFilmClick(int position) {
+        int idFilm = position + 1;
+        Cursor mCursor = getContentResolver().query(FilmProvider.FAVORITES_URI, null, FavoriteTableHelper._ID + " =" + idFilm, null,null);
+        mCursor.moveToFirst();
+        String titoloFilm = mCursor.getString(mCursor.getColumnIndex(FilmTableHelper.TITLE));
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        ConfirmDialogFragment dialogFragment = new ConfirmDialogFragment("Rimuovi dai Preferiti",
+                "Sei sicuro di volere rimuovere il film " + titoloFilm + " dai preferiti ?",
+                position);
+        dialogFragment.show(fragmentManager, ConfirmDialogFragment.class.getName());
+    }
 }

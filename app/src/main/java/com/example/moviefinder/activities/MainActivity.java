@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -28,6 +29,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.ProgressBar;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.example.moviefinder.R;
@@ -107,12 +109,18 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
 
         adapterRecycler = new FilmAdapterRecycler(this,this);
 
-        manager = new GridLayoutManager(this,2);
+        // Controllo l'orientamento dello schermo
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            // Se è portrait, allora uso 2 colonne
+            manager = new GridLayoutManager(this,2);
+        }
+        else{
+            // Se è landscape, allore uso 3 colonne
+            manager = new GridLayoutManager(this,3);
+        }
 
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(adapterRecycler);
-
-        //loadFilms();
 
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -144,6 +152,40 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
+
+        MenuItem mSearch = menu.findItem(R.id.search);
+        SearchView mSearchView = (SearchView) mSearch.getActionView();
+        mSearchView.setQueryHint("Search");
+
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                Cursor mCursor = getContentResolver().query(FilmProvider.FILMS_URI, null, FilmTableHelper.TITLE + "=?", new String[]{String.valueOf(query)}, null);
+                mCursor.moveToFirst();
+                if (mCursor.getCount() == 0) {
+                    Toast.makeText(MainActivity.this,"Film sconosciuto", Toast.LENGTH_SHORT).show();
+                    fetchDatiDatabase();
+                } else {
+                    Log.d("PROVA", "onQueryTextSubmit: " + mCursor.getString(mCursor.getColumnIndex(FilmTableHelper.TITLE)));
+                    List<Film> films1 = new ArrayList<>();
+                    for (mCursor.moveToFirst(); !mCursor.isAfterLast(); mCursor.moveToNext()) {
+                        // The Cursor is now set to the right position
+                        films1.add(new Film(mCursor.getString(mCursor.getColumnIndex(FilmTableHelper.POSTER_PATH))));
+                    }
+                    // Setto la recyclerview con i film recuperati dal database
+                    adapterRecycler.setFilms(films1);
+                    adapterRecycler.notifyDataSetChanged();
+                    loadingBar.setVisibility(View.GONE);
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
         return true;
     }
 
@@ -168,10 +210,6 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
 
     // Carico i film
     private void loadFilmsScrool() {
-        /*loadingBar.setVisibility(View.VISIBLE);
-        webService.getFilms(webServerListener,2);
-        adapterRecycler.notifyDataSetChanged();*/
-
         loadingBar.setVisibility(View.VISIBLE);
         Toast.makeText(MainActivity.this,"Caricamento film...", Toast.LENGTH_SHORT).show();
 

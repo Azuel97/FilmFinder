@@ -19,27 +19,72 @@ import com.example.moviefinder.database.FavoriteTableHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FavoriteAdapter extends CursorAdapter{
+public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.MyViewHolder> {
 
-    public FavoriteAdapter(Context context, Cursor c) {
-        super(context, c);
+    private Context context;
+    private List<Film> films = new ArrayList<>();
+    private OnFilmListener mOnFilmListener;
+
+    public FavoriteAdapter(Context context, OnFilmListener onFilmListener) {
+        this.context = context;
+        this.mOnFilmListener = onFilmListener;
+    }
+
+    public void setFilms(List<Film> films)  {
+        this.films = films;
+    }
+
+    @NonNull
+    @Override
+    public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view;
+        LayoutInflater mInflater = LayoutInflater.from(context);
+        view = mInflater.inflate(R.layout.film_cell,parent,false);
+
+        return new MyViewHolder(view, mOnFilmListener);
     }
 
     @Override
-    public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        LayoutInflater vInflater = LayoutInflater.from(context);
-        View vView = vInflater.inflate(R.layout.film_cell, null);
-        return vView;
-    }
-
-    @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-        ImageView imageView = view.findViewById(R.id.imageFilm);
+    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+        final Film currentFilm = films.get(position);
 
         // Glide for image
         Glide.with(context)
-                .load("https://image.tmdb.org/t/p/w500/"+cursor.getString(cursor.getColumnIndex(FavoriteTableHelper.POSTER_PATH)))
-                .into(imageView);
+                .load("https://image.tmdb.org/t/p/w500/"+currentFilm.getPosterPath())
+                .into(holder.image);
+    }
+
+    @Override
+    public int getItemCount() {
+        return films.size();
+    }
+
+    // Classe ViewHolder
+    public static class MyViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener {
+
+        ImageView image;
+        OnFilmListener onFilmListener;
+
+        public MyViewHolder(@NonNull View itemView, OnFilmListener onFilmListener) {
+            super(itemView);
+            this.onFilmListener = onFilmListener;
+            image = itemView.findViewById(R.id.imageFilm);
+
+            itemView.setOnLongClickListener(this);
+        }
+
+
+        @Override
+        public boolean onLongClick(View v) {
+            onFilmListener.onLongFilmClick(getAdapterPosition());
+            return true;
+        }
+    }
+
+
+    // Interface per il clickListener
+    public interface OnFilmListener {
+        void onLongFilmClick(int position);
     }
 
 }

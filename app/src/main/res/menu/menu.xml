@@ -3,6 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/search"
+        android:icon="@drawable/ic_search"
+        app:showAsAction="always"
+        android:title="search"
+        app:actionViewClass="android.widget.SearchView"
+        android:iconTint="@color/colorSearchIcon"/>
+
+    <item
         android:id="@+id/favorite"
         android:icon="@drawable/ic_favorite"
         app:showAsAction="always"
