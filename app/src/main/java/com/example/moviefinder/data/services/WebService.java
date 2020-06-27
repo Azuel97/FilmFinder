@@ -3,6 +3,8 @@ package com.example.moviefinder.data.services;
 import android.util.Log;
 
 import com.example.moviefinder.data.models.Films;
+import com.example.moviefinder.data.models.Movie;
+import com.example.moviefinder.data.models.Movies;
 
 import java.io.IOException;
 
@@ -58,5 +60,29 @@ public class WebService {
             }
         });
     }
+
+    /*public void getVideo(final IVideoService callBack, int id) {
+        Call<Movies> filmRequest = filmService.getVideo(id,API_KEY,LANGUAGE);
+        filmRequest.enqueue(new Callback<Movies>() {
+            @Override
+            public void onResponse(Call<Movies> call, Response<Movies> response) {
+                if (response.code() == 200) {
+                    callBack.onVideoFetched(true,response.body(),-1,null, response.body().getResults());
+                } else {
+                    try {
+                        callBack.onVideoFetched(true,null,response.code(),response.errorBody().string(), response.body().getResults());
+                    } catch (IOException ex) {
+                        Log.e("WebService", ex.toString() );
+                        callBack.onVideoFetched(true, null, response.code(),"Generic error message", response.body().getResults());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Movies> call, Throwable t) {
+                callBack.onVideoFetched(false, null, -1, t.getLocalizedMessage(), null);
+            }
+        });
+    }*/
 
 }

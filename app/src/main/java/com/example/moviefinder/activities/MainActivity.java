@@ -5,6 +5,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.CursorLoader;
@@ -13,6 +15,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.ActivityOptions;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -28,6 +31,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.Toast;
@@ -37,6 +41,9 @@ import com.example.moviefinder.adapters.FavoriteAdapter;
 import com.example.moviefinder.adapters.FilmAdapterRecycler;
 import com.example.moviefinder.data.models.Film;
 import com.example.moviefinder.data.models.Films;
+import com.example.moviefinder.data.models.Movie;
+import com.example.moviefinder.data.models.Movies;
+import com.example.moviefinder.data.services.IVideoService;
 import com.example.moviefinder.data.services.IWebServer;
 import com.example.moviefinder.data.services.WebService;
 import com.example.moviefinder.database.FavoriteTableHelper;
@@ -56,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
     int page = 1;
 
     Toolbar toolbar;
+    ConstraintLayout overlay;
 
     private ProgressBar loadingBar;
 
@@ -63,13 +71,17 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
     private FilmAdapterRecycler adapterRecycler;
 
     private WebService webService;
+    //private IVideoService videoServiceListener;
     private IWebServer webServerListener = new IWebServer() {
         @Override
         public void onFilmsFetched(boolean success, Films films, int errorCode, String errorMessage, List<Film> responseFilm) {
             // Se il fetch dei dati va a buon fine
             if (success) {
                  Log.d("PROVA", "onFilmsFetched: " + films.getPage());
-                // Eseguo query, che ritorna l'intera tabella del db
+                saveDataOnDB(responseFilm);
+                fetchDatiDatabase();
+
+                /*// Eseguo query, che ritorna l'intera tabella del db
                 Cursor cursor = getContentResolver().query(FilmProvider.FILMS_URI, null, null, null,null);
                 // Se ritorna 0, allora è vuota, quindi deve popolare il db
                 if (cursor.getCount() == 0) {
@@ -83,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
                     saveDataOnDB(responseFilm);
 
                     fetchDatiDatabase();
-                }
+                }*/
                 // Toast.makeText(MainActivity.this,"E' andato tutto bene", Toast.LENGTH_SHORT).show();
             } else {
                 fetchDatiDatabase();
@@ -98,14 +110,17 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
         setContentView(R.layout.activity_main);
 
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("Movies");
+        toolbar.setTitle("Movies Finder ");
         toolbar.setTitleTextColor(getResources().getColor(R.color.white));
         setSupportActionBar(toolbar);
 
         webService = WebService.getInstance();
+        //searchVideo();
 
         loadingBar = findViewById(R.id.loading_bar);
         recyclerView = findViewById(R.id.film_recycler);
+
+        overlay = findViewById(R.id.mainActivityOverlayView);
 
         adapterRecycler = new FilmAdapterRecycler(this,this);
 
@@ -147,6 +162,20 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
 
         loadFilms();
     }
+
+    /*private void searchVideo() {
+        videoServiceListener = new IVideoService() {
+            @Override
+            public void onVideoFetched(boolean success, Movies movies, int errorCode, String errorMessage, List<Movie> responseMovie) {
+                if (success){
+                    Log.d("AAAAA", "onVideoFetched: " + responseMovie.get(0).getName());
+                }else {
+                    Log.d("AAAAA", "ERRORE");
+                }
+            }
+        };
+        webService.getVideo(videoServiceListener,22);
+    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -203,14 +232,16 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
 
     // Carico i film
     private void loadFilms() {
-        loadingBar.setVisibility(View.VISIBLE);
+        //loadingBar.setVisibility(View.VISIBLE);
+        overlay.setVisibility(View.VISIBLE);
         webService.getFilms(webServerListener,page);
         page++;
     }
 
     // Carico i film
     private void loadFilmsScrool() {
-        loadingBar.setVisibility(View.VISIBLE);
+        //loadingBar.setVisibility(View.VISIBLE);
+        overlay.setVisibility(View.VISIBLE);
         Toast.makeText(MainActivity.this,"Caricamento film...", Toast.LENGTH_SHORT).show();
 
         new Handler().postDelayed(new Runnable() {
@@ -226,10 +257,11 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
 
     // Gestione del click sulla locandina del film nella lista
     @Override
-    public void onFilmCLick(int position) {
+    public void onFilmCLick(int position, ImageView image) {
         Intent intent = new Intent(this,DetailMovieActivity.class);
         intent.putExtra("ID", position+1);
-        startActivity(intent);
+        ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(MainActivity.this, image,"example_transition");
+        startActivity(intent,options.toBundle());
     }
 
     // Gestione del longClick sulla Locandina del film nella lista
@@ -255,6 +287,9 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
             values.put(FilmTableHelper.DESCRIPTION, responseFilm.get(i).getOverview());
             values.put(FilmTableHelper.POSTER_PATH, responseFilm.get(i).getPosterPath());
             values.put(FilmTableHelper.BACKDROP_PATH, responseFilm.get(i).getBackdropPath());
+            values.put(FilmTableHelper.VOTE_AVERAGE, responseFilm.get(i).getVoteAverage());
+            values.put(FilmTableHelper.RELASE_DATE, responseFilm.get(i).getReleaseDate());
+            values.put(FilmTableHelper.FILM_ID, responseFilm.get(i).getId());
             getContentResolver().insert(FilmProvider.FILMS_URI, values);
         }
     }
@@ -271,7 +306,8 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
         // Setto la recyclerview con i film recuperati dal database
         adapterRecycler.setFilms(films1);
         adapterRecycler.notifyDataSetChanged();
-        loadingBar.setVisibility(View.GONE);
+        //loadingBar.setVisibility(View.GONE);
+        overlay.setVisibility(View.GONE);
     }
 
     // Click su conferma di aggiungere il film ai preferiti

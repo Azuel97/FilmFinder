@@ -57,8 +57,23 @@ public class DetailMovieActivity extends AppCompatActivity {
         // Glide for image
         Glide.with(this)
                 .load("https://image.tmdb.org/t/p/w500/"+cursor.getString(cursor.getColumnIndex(FilmTableHelper.BACKDROP_PATH)))
-                .placeholder(new ColorDrawable(Color.BLUE))
+                .placeholder(new ColorDrawable(Color.rgb(192, 196, 193)))
                 .into(imageView);
+
+        ImageView imageView1 = findViewById(R.id.imageView1);
+        // Glide for image
+        Glide.with(this)
+                .load("https://image.tmdb.org/t/p/w500/"+cursor.getString(cursor.getColumnIndex(FilmTableHelper.POSTER_PATH)))
+                .placeholder(new ColorDrawable(Color.rgb(192, 196, 193)))
+                .into(imageView1);
+
+        TextView relaseDate = findViewById(R.id.textViewRelaseDate);
+        //relaseDate.setText(cursor.getString(cursor.getColumnIndex(FilmTableHelper.RELASE_DATE)));
+        relaseDate.setText(String.format("%s",cursor.getString(cursor.getColumnIndex(FilmTableHelper.RELASE_DATE))));
+
+        TextView voteAverage = findViewById(R.id.textViewVote);
+        //voteAverage.setText(cursor.getString(cursor.getColumnIndex(FilmTableHelper.VOTE_AVERAGE)));
+        voteAverage.setText(String.format("%s/10",cursor.getString(cursor.getColumnIndex(FilmTableHelper.VOTE_AVERAGE))));
     }
 
     @Override

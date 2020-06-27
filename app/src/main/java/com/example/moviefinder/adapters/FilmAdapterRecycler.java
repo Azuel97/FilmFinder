@@ -10,6 +10,7 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -46,7 +47,7 @@ public class FilmAdapterRecycler extends RecyclerView.Adapter<FilmAdapterRecycle
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
         final Film currentFilm = films.get(position);
 
         // Glide for image
@@ -77,7 +78,7 @@ public class FilmAdapterRecycler extends RecyclerView.Adapter<FilmAdapterRecycle
 
         @Override
         public void onClick(View v) {
-            onFilmListener.onFilmCLick(getAdapterPosition());
+            onFilmListener.onFilmCLick(getAdapterPosition(), image);
         }
 
         @Override
@@ -90,7 +91,7 @@ public class FilmAdapterRecycler extends RecyclerView.Adapter<FilmAdapterRecycle
 
     // Interface per il clickListener
     public interface OnFilmListener {
-        void onFilmCLick(int position);
+        void onFilmCLick(int position, ImageView image);
         void onLongFilmClick(int position);
     }
 }
