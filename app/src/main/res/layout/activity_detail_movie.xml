@@ -91,7 +91,7 @@
                 android:id="@+id/textViewRelaseDate"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="TextView"
+                android:text=""
                 android:textSize="18sp"
                 app:layout_constraintEnd_toEndOf="@+id/textView"
                 app:layout_constraintStart_toStartOf="@+id/textView"
@@ -101,7 +101,7 @@
                 android:id="@+id/textViewVote"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="TextView"
+                android:text=""
                 android:textSize="18sp"
                 app:layout_constraintEnd_toEndOf="@+id/textView2"
                 app:layout_constraintStart_toStartOf="@+id/textView2"
@@ -148,14 +148,38 @@
                 android:id="@+id/textViewDescription"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginBottom="32dp"
                 android:text="textview"
                 android:textAlignment="textStart"
                 android:textSize="16sp"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/textView3"
                 app:layout_constraintStart_toStartOf="@+id/textView3"
                 app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+            <com.google.android.youtube.player.YouTubePlayerView
+                android:id="@+id/youtube_player_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="32dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/textView4" />
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Trailer"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="@+id/textViewDescription"
+                app:layout_constraintStart_toStartOf="@+id/textViewDescription"
+                app:layout_constraintTop_toBottomOf="@+id/textViewDescription" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -53,12 +53,18 @@ public class FilmAdapterRecycler extends RecyclerView.Adapter<FilmAdapterRecycle
         // Glide for image
         Glide.with(context)
                 .load("https://image.tmdb.org/t/p/w500/"+currentFilm.getPosterPath())
+                .placeholder(R.drawable.image_placeholder)
                 .into(holder.image);
     }
 
     @Override
     public int getItemCount() {
         return films.size();
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return films.get(position).getId();
     }
 
     // Classe ViewHolder

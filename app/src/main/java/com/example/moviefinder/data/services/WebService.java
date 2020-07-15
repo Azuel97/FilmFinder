@@ -61,7 +61,7 @@ public class WebService {
         });
     }
 
-    /*public void getVideo(final IVideoService callBack, int id) {
+    public void getVideo(final IWebServer callBack, int id) {
         Call<Movies> filmRequest = filmService.getVideo(id,API_KEY,LANGUAGE);
         filmRequest.enqueue(new Callback<Movies>() {
             @Override
@@ -83,6 +83,6 @@ public class WebService {
                 callBack.onVideoFetched(false, null, -1, t.getLocalizedMessage(), null);
             }
         });
-    }*/
+    }
 
 }

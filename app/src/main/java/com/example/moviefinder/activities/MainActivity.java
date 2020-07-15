@@ -71,17 +71,12 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
     private FilmAdapterRecycler adapterRecycler;
 
     private WebService webService;
-    //private IVideoService videoServiceListener;
     private IWebServer webServerListener = new IWebServer() {
         @Override
         public void onFilmsFetched(boolean success, Films films, int errorCode, String errorMessage, List<Film> responseFilm) {
             // Se il fetch dei dati va a buon fine
             if (success) {
-                 Log.d("PROVA", "onFilmsFetched: " + films.getPage());
-                saveDataOnDB(responseFilm);
-                fetchDatiDatabase();
-
-                /*// Eseguo query, che ritorna l'intera tabella del db
+                // Eseguo query, che ritorna l'intera tabella del db
                 Cursor cursor = getContentResolver().query(FilmProvider.FILMS_URI, null, null, null,null);
                 // Se ritorna 0, allora è vuota, quindi deve popolare il db
                 if (cursor.getCount() == 0) {
@@ -90,16 +85,22 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
                     fetchDatiDatabase();
                 } else {
                     Log.d("PROVA", "READ DB");
-
                     // TODO: da modificare per visualizzare correttamente
                     saveDataOnDB(responseFilm);
-
                     fetchDatiDatabase();
-                }*/
-                // Toast.makeText(MainActivity.this,"E' andato tutto bene", Toast.LENGTH_SHORT).show();
+                }
             } else {
                 fetchDatiDatabase();
                 Toast.makeText(MainActivity.this,"OFFLINE : " + errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        }
+
+        @Override
+        public void onVideoFetched(boolean success, Movies movies, int errorCode, String errorMessage, List<Movie> responseMovie) {
+            if (success){
+                Log.d("AAAAA", "onVideoFetched: " + responseMovie.get(0).getName());
+            }else {
+                Log.d("AAAAA", "ERRORE");
             }
         }
     };
@@ -110,12 +111,11 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
         setContentView(R.layout.activity_main);
 
         toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("Movies Finder ");
+        toolbar.setTitle("MovieFinder ");
         toolbar.setTitleTextColor(getResources().getColor(R.color.white));
         setSupportActionBar(toolbar);
 
         webService = WebService.getInstance();
-        //searchVideo();
 
         loadingBar = findViewById(R.id.loading_bar);
         recyclerView = findViewById(R.id.film_recycler);
@@ -163,20 +163,6 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
         loadFilms();
     }
 
-    /*private void searchVideo() {
-        videoServiceListener = new IVideoService() {
-            @Override
-            public void onVideoFetched(boolean success, Movies movies, int errorCode, String errorMessage, List<Movie> responseMovie) {
-                if (success){
-                    Log.d("AAAAA", "onVideoFetched: " + responseMovie.get(0).getName());
-                }else {
-                    Log.d("AAAAA", "ERRORE");
-                }
-            }
-        };
-        webService.getVideo(videoServiceListener,22);
-    }*/
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -199,14 +185,19 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
                     List<Film> films1 = new ArrayList<>();
                     for (mCursor.moveToFirst(); !mCursor.isAfterLast(); mCursor.moveToNext()) {
                         // The Cursor is now set to the right position
-                        films1.add(new Film(mCursor.getString(mCursor.getColumnIndex(FilmTableHelper.POSTER_PATH))));
+                        films1.add(new Film(
+                                mCursor.getString(
+                                        mCursor.getColumnIndex(
+                                                FilmTableHelper.POSTER_PATH)
+                                )
+                                ,mCursor.getInt(mCursor.getColumnIndex(FilmTableHelper.FILM_ID))));
                     }
                     // Setto la recyclerview con i film recuperati dal database
                     adapterRecycler.setFilms(films1);
                     adapterRecycler.notifyDataSetChanged();
                     loadingBar.setVisibility(View.GONE);
                 }
-                return false;
+                return true;
             }
 
             @Override
@@ -218,11 +209,12 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
         return true;
     }
 
+    // gestione click sulla toolbar
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case R.id.favorite:
-                Toast.makeText(this,"Favoriti",Toast.LENGTH_LONG).show();
+                //Toast.makeText(this,"Favoriti",Toast.LENGTH_LONG).show();
                 Intent intent = new Intent(this,FavoriteActivity.class);
                 startActivity(intent);
             default:
@@ -232,15 +224,13 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
 
     // Carico i film
     private void loadFilms() {
-        //loadingBar.setVisibility(View.VISIBLE);
         overlay.setVisibility(View.VISIBLE);
         webService.getFilms(webServerListener,page);
         page++;
     }
 
-    // Carico i film
+    // Carico i film quando avviene lo scroll
     private void loadFilmsScrool() {
-        //loadingBar.setVisibility(View.VISIBLE);
         overlay.setVisibility(View.VISIBLE);
         Toast.makeText(MainActivity.this,"Caricamento film...", Toast.LENGTH_SHORT).show();
 
@@ -259,7 +249,10 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
     @Override
     public void onFilmCLick(int position, ImageView image) {
         Intent intent = new Intent(this,DetailMovieActivity.class);
-        intent.putExtra("ID", position+1);
+        Bundle b = new Bundle();
+        b.putInt("ID", (int) adapterRecycler.getItemId(position));
+        intent.putExtras(b);
+        Log.d("BBB", "onFilmCLick: " + adapterRecycler.getItemId(position));
         ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(MainActivity.this, image,"example_transition");
         startActivity(intent,options.toBundle());
     }
@@ -300,21 +293,36 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
         Cursor mCursor = getContentResolver().query(FilmProvider.FILMS_URI, null, null, null,null);
         List<Film> films1 = new ArrayList<>();
         for(mCursor.moveToFirst(); !mCursor.isAfterLast(); mCursor.moveToNext()) {
-            // The Cursor is now set to the right position
-            films1.add(new Film(mCursor.getString(mCursor.getColumnIndex(FilmTableHelper.POSTER_PATH))));
+            // il cursore ora è nella giusta posizione
+            films1.add(new Film(
+                    mCursor.getString(
+                            mCursor.getColumnIndex(
+                                    FilmTableHelper.POSTER_PATH)
+                    )
+            ,mCursor.getInt(mCursor.getColumnIndex(FilmTableHelper.FILM_ID))));
         }
         // Setto la recyclerview con i film recuperati dal database
         adapterRecycler.setFilms(films1);
         adapterRecycler.notifyDataSetChanged();
-        //loadingBar.setVisibility(View.GONE);
         overlay.setVisibility(View.GONE);
     }
 
     // Click su conferma di aggiungere il film ai preferiti
     @Override
     public void onPositivePressed(long id) {
-        Toast.makeText(this,"Operazione confermata",Toast.LENGTH_LONG).show();
-        insertUser(id);
+        long idFilm = id + 1;
+        // Eseguo una ricerca tramite l'id all'interno del db per recuperare le informazioni del film
+        Cursor cursor = getContentResolver().query(FilmProvider.FILMS_URI, null, FilmTableHelper._ID + " = " + idFilm, null,null);
+        cursor.moveToNext();
+
+        Cursor cursor1 = getContentResolver().query(FilmProvider.FAVORITES_URI, null, FavoriteTableHelper.ID_FILM + " = " + cursor.getInt(cursor.getColumnIndex(FilmTableHelper.FILM_ID)), null,null);
+        cursor1.moveToNext();
+
+        if (cursor1.getCount() == 0) {
+            insertFavorite(id);
+        } else {
+            Toast.makeText(this,"Film già nei preferiti",Toast.LENGTH_LONG).show();
+        }
     }
 
     // Click su annula aggiunta del fiml ai preferiti
@@ -323,17 +331,16 @@ public class MainActivity extends AppCompatActivity implements FilmAdapterRecycl
         Toast.makeText(this,"Operazione annullata",Toast.LENGTH_LONG).show();
     }
 
-    private void insertUser(long id) {
+    // Aggiungo il film ai preferiti
+    private void insertFavorite(long id) {
         long idFilm = id + 1;
         // Eseguo una ricerca tramite l'id all'interno del db per recuperare le informazioni del film
         Cursor cursor = getContentResolver().query(FilmProvider.FILMS_URI, null, FilmTableHelper._ID + " = " + idFilm, null,null);
         cursor.moveToNext();
 
         ContentValues values = new ContentValues();
-        values.put(FavoriteTableHelper.TITLE, cursor.getString(cursor.getColumnIndex(FilmTableHelper.TITLE)));
-        values.put(FavoriteTableHelper.DESCRIPTION, cursor.getString(cursor.getColumnIndex(FilmTableHelper.DESCRIPTION)));
-        values.put(FavoriteTableHelper.POSTER_PATH, cursor.getString(cursor.getColumnIndex(FilmTableHelper.POSTER_PATH)));
-        values.put(FavoriteTableHelper.BACKDROP_PATH, cursor.getString(cursor.getColumnIndex(FilmTableHelper.BACKDROP_PATH)));
+        values.put(FavoriteTableHelper.ID_FILM, cursor.getInt(cursor.getColumnIndex(FilmTableHelper.FILM_ID)));
         getContentResolver().insert(FilmProvider.FAVORITES_URI, values);
+        Toast.makeText(this,"Aggiunto ai preferiti",Toast.LENGTH_LONG).show();
     }
 }

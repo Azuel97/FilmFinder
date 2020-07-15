@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,13 +16,45 @@ import com.bumptech.glide.Glide;
 import com.example.moviefinder.R;
 import com.example.moviefinder.data.models.Film;
 import com.example.moviefinder.database.FavoriteTableHelper;
+import com.example.moviefinder.database.FilmProvider;
+import com.example.moviefinder.database.FilmTableHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.MyViewHolder> {
+public class FavoriteAdapter extends CursorAdapter {
 
-    private Context context;
+
+    public FavoriteAdapter(Context context, Cursor c) {
+        super(context, c);
+    }
+
+    @Override
+    public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        LayoutInflater vInflater = LayoutInflater.from(context);
+        View vView = vInflater.inflate(R.layout.film_cell_favorite, null);
+        return vView;
+    }
+
+    @Override
+    public void bindView(View view, Context context, Cursor cursor) {
+        int idFilm = cursor.getInt(cursor.getColumnIndex(FavoriteTableHelper.ID_FILM));
+        // Eseguo una ricerca tramite l'id all'interno del db per recuperare le informazioni del film
+        Cursor cursor1 = context.getContentResolver().query(FilmProvider.FILMS_URI, null, FilmTableHelper.FILM_ID + " = " + idFilm, null,null);
+        cursor1.moveToNext();
+
+        ImageView imageView = view.findViewById(R.id.imageFilm);
+        TextView titolo = view.findViewById(R.id.textViewTitoloPreferito);
+
+        // Glide for image
+        Glide.with(context)
+                .load("https://image.tmdb.org/t/p/w500/"+cursor1.getString(cursor1.getColumnIndex(FilmTableHelper.POSTER_PATH)))
+                .into(imageView);
+
+        titolo.setText(cursor1.getString(cursor1.getColumnIndex(FilmTableHelper.TITLE)));
+    }
+
+    /*private Context context;
     private List<Film> films = new ArrayList<>();
     private OnFilmListener mOnFilmListener;
 
@@ -85,6 +118,6 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.MyView
     // Interface per il clickListener
     public interface OnFilmListener {
         void onLongFilmClick(int position);
-    }
+    }*/
 
 }

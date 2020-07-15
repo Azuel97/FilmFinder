@@ -55,8 +55,9 @@ public class Film {
         this.voteAverage = voteAverage;
     }
 
-    public Film(String posterPath) {
+    public Film(String posterPath, int id) {
         this.posterPath = posterPath;
+        this.id = id;
     }
 
     public String getPosterPath() {

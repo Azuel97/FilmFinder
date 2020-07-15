@@ -13,11 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".activities.FavoriteActivity"
-            android:parentActivityName=".activities.MainActivity"></activity>
+            android:name=".activities.FavoriteActivity"></activity>
         <activity
-            android:name=".activities.DetailMovieActivity"
-            android:parentActivityName=".activities.MainActivity"></activity>
+            android:name=".activities.DetailMovieActivity"></activity>
         <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

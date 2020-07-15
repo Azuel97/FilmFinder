@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.moviefinder"
-        minSdkVersion 29
+        minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
@@ -42,4 +42,7 @@ dependencies {
     implementation 'com.android.support:cardview-v7:21.0.0'
 
     implementation 'com.android.support:recyclerview-v7:28.0.0'
+
+    implementation files('libs/YouTubeAndroidPlayerApi.jar')
+
 }
